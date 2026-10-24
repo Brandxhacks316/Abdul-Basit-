@@ -3,239 +3,240 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Abdul Basit Chat Portal</title>
+    <title>ABDUL BASIT CHAT PORTAL</title>
     <style>
-        /* === GLOBAL THEME === */
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Courier New', Courier, monospace; }
         body { background-color: #050505; color: #ff0033; overflow: hidden; height: 100vh; }
+        canvas#matrix { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; opacity: 0.4; }
         
-        /* Matrix Canvas */
-        canvas#matrix { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; opacity: 0.35; }
-        
-        /* Screen Management */
         .screen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 10; display: none; flex-direction: column; align-items: center; justify-content: center; background: rgba(0, 0, 0, 0.85); }
         .active { display: flex !important; }
 
-        /* === LOGIN SCREEN === */
-        .owner-tag {
-            color: #00ffff;
-            text-shadow: 0 0 10px #00ffff, 0 0 20px #00ffff;
-            font-size: 1.2rem;
-            margin-bottom: 15px;
-            font-weight: bold;
-            letter-spacing: 2px;
-        }
-        
-        .title-3d { 
-            font-size: 3.5vw; 
-            min-font-size: 30px;
-            font-weight: 900; 
-            color: #fff; 
-            font-family: 'Arial Black', sans-serif;
-            text-align: center;
-            line-height: 1.2;
-            margin-bottom: 50px;
-            letter-spacing: 3px;
-            text-shadow: 
-                0 1px 0 #ff0033, 0 2px 0 #e6002e, 0 3px 0 #cc0029, 
-                0 4px 0 #b30024, 0 5px 0 #99001f, 0 6px 0 #80001a,
-                0 15px 30px rgba(255,0,51,0.6); 
-        }
+        .owner-tag { color: #00ffcc; font-size: 1.5rem; margin-bottom: 10px; text-shadow: 0 0 10px #00ffcc; animation: flicker 2s infinite; }
+        .title-3d { font-size: 3.5rem; font-weight: 900; color: #fff; text-shadow: 0 5px 0 #8a001d, 0 10px 0 #ff0033, 0 0 20px #ff0033; margin-bottom: 40px; text-align: center; text-transform: uppercase; }
+        .login-btn { padding: 15px 30px; background: transparent; border: 2px solid #ff0033; color: #ff0033; font-size: 1.2rem; cursor: pointer; text-transform: uppercase; font-weight: bold; transition: 0.3s; }
+        .login-btn:hover { background: #ff0033; color: #000; box-shadow: 0 0 20px #ff0033; }
 
-        .btn-group { display: flex; flex-direction: column; gap: 20px; }
+        .chat-container { width: 95%; max-width: 600px; height: 85vh; border: 1px solid #ff0033; background: rgba(10, 10, 10, 0.95); display: flex; flex-direction: column; position: relative; box-shadow: 0 0 15px rgba(255, 0, 51, 0.3); }
+        .chat-header { padding: 15px; border-bottom: 1px solid #ff0033; text-align: center; font-weight: bold; background: #111; color: #fff; display: flex; justify-content: space-between; align-items: center; }
+        .logout-btn { background: none; border: 1px solid #ff0033; color: #ff0033; padding: 5px 10px; cursor: pointer; }
         
-        .login-btn { 
-            padding: 15px 30px; 
-            background: rgba(10, 10, 10, 0.8); 
-            border: 2px solid #ff0033; 
-            color: #ff0033; 
-            font-size: 1.1rem; 
-            cursor: pointer; 
-            text-transform: uppercase; 
-            font-weight: bold; 
-            transition: 0.3s;
-            box-shadow: 0 0 10px rgba(255, 0, 51, 0.2);
-        }
-        .login-btn:hover { background: #ff0033; color: #000; box-shadow: 0 0 25px #ff0033; }
+        .messages { flex: 1; padding: 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
+        .msg { padding: 10px; border-radius: 5px; max-width: 80%; word-wrap: break-word; }
+        .msg.my-msg { background: rgba(255, 0, 51, 0.2); border: 1px solid #ff0033; align-self: flex-end; color: #fff; }
+        .msg.other-msg { background: rgba(50, 50, 50, 0.5); border: 1px solid #555; align-self: flex-start; color: #ccc; }
+        
+        .input-area { display: flex; padding: 10px; border-top: 1px solid #ff0033; background: #0a0a0a; }
+        .input-area input { flex: 1; padding: 10px; background: transparent; border: 1px solid #ff0033; color: #00ffcc; outline: none; }
+        .input-area button { padding: 10px 20px; background: #ff0033; color: #000; border: none; cursor: pointer; font-weight: bold; margin-left: 10px; }
 
-        /* === CHAT UI (COMMON) === */
-        .chat-container { width: 95%; max-width: 900px; height: 85vh; border: 1px solid #ff0033; background: rgba(10, 10, 10, 0.95); display: flex; flex-direction: column; position: relative; box-shadow: 0 0 25px rgba(255, 0, 51, 0.2); }
-        .chat-header { padding: 15px; border-bottom: 1px solid #ff0033; text-align: center; font-weight: bold; background: #111; color: #fff; display: flex; justify-content: space-between; align-items: center; letter-spacing: 1px; }
-        .logout-btn { background: none; border: 1px solid #ff0033; color: #ff0033; padding: 6px 12px; cursor: pointer; font-weight: bold; transition: 0.3s; }
-        .logout-btn:hover { background: #ff0033; color: #000; }
-        
-        /* Messages Area */
-        .messages { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; }
-        .msg { padding: 12px 18px; border-radius: 4px; max-width: 75%; word-wrap: break-word; font-size: 0.95rem; line-height: 1.4; }
-        
-        /* Message Colors */
-        .my-msg { background: rgba(255, 0, 51, 0.2); border: 1px solid #ff0033; align-self: flex-end; color: #fff; }
-        .other-msg { background: rgba(40, 40, 40, 0.8); border: 1px solid #444; align-self: flex-start; color: #ccc; }
-        
-        /* Input Area */
-        .input-area { display: flex; padding: 15px; border-top: 1px solid #ff0033; background: #0a0a0a; }
-        .input-area input { flex: 1; padding: 12px; background: rgba(0,0,0,0.5); border: 1px solid #ff0033; color: #00ffcc; outline: none; font-size: 1rem; }
-        .input-area input::placeholder { color: #555; }
-        .input-area button { padding: 12px 25px; background: #ff0033; color: #000; border: none; cursor: pointer; font-weight: bold; margin-left: 10px; transition: 0.3s; }
-        .input-area button:hover { background: #fff; color: #ff0033; }
-
-        /* === ADMIN DASHBOARD UI === */
-        .admin-layout { flex-direction: row; }
-        .sidebar { width: 30%; border-right: 1px solid #ff0033; overflow-y: auto; background: #0c0c0c; display: flex; flex-direction: column; }
-        .customer-item { padding: 18px 15px; border-bottom: 1px dashed #333; cursor: pointer; color: #aaa; transition: 0.2s; font-size: 0.9rem; }
-        .customer-item:hover, .customer-item.selected { background: rgba(255,0,51,0.2); color: #fff; border-left: 3px solid #ff0033; }
+        .admin-layout { flex-direction: row; max-width: 1000px; }
+        .sidebar { width: 30%; border-right: 1px solid #ff0033; overflow-y: auto; background: #111; }
+        .customer-item { padding: 15px; border-bottom: 1px dashed #333; cursor: pointer; color: #ccc; }
+        .customer-item:hover { background: #ff0033; color: #000; }
         .admin-chat-area { width: 70%; display: flex; flex-direction: column; }
         
-        /* Responsive adjustments */
-        @media(max-width: 768px) {
-            .title-3d { font-size: 2rem; }
-            .admin-layout { flex-direction: column; }
-            .sidebar { width: 100%; height: 30%; border-right: none; border-bottom: 1px solid #ff0033; }
-            .admin-chat-area { width: 100%; height: 70%; }
-        }
+        @keyframes flicker { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
     </style>
 </head>
 <body>
-
-    <!-- Background Animation -->
     <canvas id="matrix"></canvas>
 
     <!-- 1. LOGIN SCREEN -->
     <div id="login-screen" class="screen active">
         <div class="owner-tag">( Owner Magisk )</div>
-        <div class="title-3d">ABDUL BASIT<br>CHAT PORTAL</div>
-        <div class="btn-group">
-            <button class="login-btn" onclick="switchScreen('customer-screen')">> SIMULATE CUSTOMER LOGIN</button>
-            <button class="login-btn" onclick="switchScreen('admin-screen')">> SIMULATE ADMIN LOGIN</button>
-        </div>
+        <div class="title-3d">ABDUL BASIT CHAT PORTAL</div>
+        <button id="loginBtn" class="login-btn">> INITIATE GOOGLE LOGIN</button>
     </div>
 
-    <!-- 2. CUSTOMER SCREEN -->
+    <!-- 2. CUSTOMER CHAT SCREEN -->
     <div id="customer-screen" class="screen">
         <div class="chat-container">
             <div class="chat-header">
-                <span>SECURE CHAT: ABDUL BASIT</span>
-                <button class="logout-btn" onclick="switchScreen('login-screen')">DISCONNECT</button>
+                <span>SECURE CHAT</span>
+                <button id="custLogoutBtn" class="logout-btn">DISCONNECT</button>
             </div>
-            <div class="messages" id="customer-chat">
-                <div class="msg my-msg">Hello, I need to complete a P2P transaction.</div>
-                <div class="msg other-msg"><b>Admin:</b> Please send your details. I am online.</div>
-            </div>
+            <div id="customerMessages" class="messages"></div>
             <div class="input-area">
-                <input type="text" id="cust-input" placeholder="Type your message...">
-                <button onclick="sendSimulatedMessage('customer-chat', 'cust-input', 'my-msg')">SEND</button>
+                <input type="text" id="custMsgInput" placeholder="Type your message...">
+                <button id="custSendBtn">SEND</button>
             </div>
         </div>
     </div>
 
-    <!-- 3. ADMIN SCREEN -->
+    <!-- 3. ADMIN DASHBOARD -->
     <div id="admin-screen" class="screen">
         <div class="chat-container admin-layout">
-            
-            <!-- Sidebar: Customers List -->
             <div class="sidebar">
-                <div class="chat-header">
-                    CUSTOMERS 
-                    <button class="logout-btn" onclick="switchScreen('login-screen')">X</button>
-                </div>
-                <div class="customer-item selected">> Client Alpha</div>
-                <div class="customer-item">> Client Beta</div>
-                <div class="customer-item">> Unknown_IP_99</div>
+                <div class="chat-header">CUSTOMERS <button id="adminLogoutBtn" class="logout-btn">X</button></div>
+                <div id="customerList"></div>
             </div>
-            
-            <!-- Main Chat Area -->
             <div class="admin-chat-area">
-                <div class="chat-header">CHATTING WITH: Client Alpha</div>
-                <div class="messages" id="admin-chat">
-                    <div class="msg other-msg"><b>Client Alpha:</b> Hello, I need to complete a P2P transaction.</div>
-                    <div class="msg my-msg">Please send your details. I am online.</div>
-                </div>
+                <div class="chat-header" id="adminActiveChatHeader">SELECT A CUSTOMER</div>
+                <div id="adminMessages" class="messages"></div>
                 <div class="input-area">
-                    <input type="text" id="admin-input" placeholder="Reply to Client Alpha...">
-                    <button onclick="sendSimulatedMessage('admin-chat', 'admin-input', 'my-msg')">SEND</button>
+                    <input type="text" id="adminMsgInput" placeholder="Type to customer..." disabled>
+                    <button id="adminSendBtn" disabled>SEND</button>
                 </div>
             </div>
-            
         </div>
     </div>
 
-    <script>
-        // Matrix Canvas Animation
-        const canvas = document.getElementById('matrix');
-        const ctx = canvas.getContext('2d');
-        let width = canvas.width = window.innerWidth;
-        let height = canvas.height = window.innerHeight;
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-app.js";
+        import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-auth.js";
+        import { getFirestore, collection, addDoc, query, where, orderBy, onSnapshot, setDoc, doc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.5.0/firebase-firestore.js";
 
-        const chars = "010101 ABDULBASIT SECURE DATA ENCRYPTED".split("");
-        const fontSize = 16;
-        const columns = width / fontSize;
-        const drops = [];
+        // YAHAN APKA ADMIN EMAIL HAI
+        const ADMIN_EMAIL = "khanji223353@gmail.com"; 
         
-        for (let x = 0; x < columns; x++) {
-            drops[x] = Math.random() * 100; // random start position
+        // APKI ASLI FIREBASE KEYS (REAL BACKEND)
+        const firebaseConfig = {
+            apiKey: "AIzaSyD5odl3uHyob5GDwK88B9RHaQ1nDMmRrV0",
+            authDomain: "abdulbasit8t1.firebaseapp.com",
+            projectId: "abdulbasit8t1",
+            storageBucket: "abdulbasit8t1.firebasestorage.app",
+            messagingSenderId: "595773588592",
+            appId: "1:595773588592:web:261ebaed28dd8dc15b60b5",
+            measurementId: "G-P7XNBB3RGY"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        const provider = new GoogleAuthProvider();
+
+        let currentUser = null;
+        let activeAdminChatUid = null;
+        let unsubscribeMessages = null;
+
+        function showScreen(screenId) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById(screenId).classList.add('active');
         }
 
-        function drawMatrix() {
-            ctx.fillStyle = "rgba(5, 5, 5, 0.1)"; // Dark fade effect
-            ctx.fillRect(0, 0, width, height);
-            
-            ctx.fillStyle = "#ff0033"; // Red hacker text
-            ctx.font = fontSize + "px monospace";
+        // ASLI GOOGLE LOGIN
+        document.getElementById('loginBtn').addEventListener('click', () => {
+            signInWithPopup(auth, provider).catch(error => alert("Login Failed: " + error.message));
+        });
 
-            for (let i = 0; i < drops.length; i++) {
-                const text = chars[Math.floor(Math.random() * chars.length)];
-                ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+        const logout = () => signOut(auth);
+        document.getElementById('custLogoutBtn').addEventListener('click', logout);
+        document.getElementById('adminLogoutBtn').addEventListener('click', logout);
 
-                if (drops[i] * fontSize > height && Math.random() > 0.95) {
-                    drops[i] = 0;
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                currentUser = user;
+                if (user.email === ADMIN_EMAIL) {
+                    showScreen('admin-screen');
+                    loadAdminDashboard();
+                } else {
+                    await setDoc(doc(db, "customers", user.uid), {
+                        uid: user.uid, name: user.displayName, email: user.email, lastLogin: serverTimestamp()
+                    }, { merge: true });
+                    showScreen('customer-screen');
+                    loadCustomerChat(user.uid);
                 }
+            } else {
+                currentUser = null;
+                if (unsubscribeMessages) unsubscribeMessages();
+                showScreen('login-screen');
+            }
+        });
+
+        async function sendMessage(text, chatRoomId) {
+            if (!text.trim()) return;
+            await addDoc(collection(db, "messages"), {
+                chatRoomId: chatRoomId, senderId: currentUser.uid, senderName: currentUser.displayName, text: text, timestamp: serverTimestamp()
+            });
+        }
+
+        document.getElementById('custSendBtn').addEventListener('click', () => {
+            const input = document.getElementById('custMsgInput');
+            sendMessage(input.value, currentUser.uid);
+            input.value = "";
+        });
+
+        document.getElementById('adminSendBtn').addEventListener('click', () => {
+            const input = document.getElementById('adminMsgInput');
+            if (activeAdminChatUid) {
+                sendMessage(input.value, activeAdminChatUid);
+                input.value = "";
+            }
+        });
+
+        function loadCustomerChat(uid) {
+            const q = query(collection(db, "messages"), where("chatRoomId", "==", uid), orderBy("timestamp", "asc"));
+            if (unsubscribeMessages) unsubscribeMessages();
+            
+            unsubscribeMessages = onSnapshot(q, (snapshot) => {
+                const box = document.getElementById('customerMessages');
+                box.innerHTML = '';
+                snapshot.forEach((doc) => {
+                    const data = doc.data();
+                    const isMe = data.senderId === currentUser.uid;
+                    box.innerHTML += `<div class="msg ${isMe ? 'my-msg' : 'other-msg'}"><b>${isMe ? 'You' : 'Admin'}:</b> ${data.text}</div>`;
+                });
+                box.scrollTop = box.scrollHeight;
+            });
+        }
+
+        function loadAdminDashboard() {
+            const q = query(collection(db, "customers"), orderBy("lastLogin", "desc"));
+            onSnapshot(q, (snapshot) => {
+                const list = document.getElementById('customerList');
+                list.innerHTML = '';
+                snapshot.forEach((docSnap) => {
+                    const cust = docSnap.data();
+                    const div = document.createElement('div');
+                    div.className = "customer-item";
+                    div.innerHTML = `> ${cust.name}`;
+                    div.onclick = () => openAdminChat(cust.uid, cust.name);
+                    list.appendChild(div);
+                });
+            });
+        }
+
+        function openAdminChat(custUid, custName) {
+            activeAdminChatUid = custUid;
+            document.getElementById('adminActiveChatHeader').innerText = "CHATTING WITH: " + custName;
+            document.getElementById('adminMsgInput').disabled = false;
+            document.getElementById('adminSendBtn').disabled = false;
+
+            const q = query(collection(db, "messages"), where("chatRoomId", "==", custUid), orderBy("timestamp", "asc"));
+            if (unsubscribeMessages) unsubscribeMessages();
+            
+            unsubscribeMessages = onSnapshot(q, (snapshot) => {
+                const box = document.getElementById('adminMessages');
+                box.innerHTML = '';
+                snapshot.forEach((doc) => {
+                    const data = doc.data();
+                    const isMe = data.senderId === currentUser.uid;
+                    box.innerHTML += `<div class="msg ${isMe ? 'my-msg' : 'other-msg'}"><b>${isMe ? 'Admin' : custName}:</b> ${data.text}</div>`;
+                });
+                box.scrollTop = box.scrollHeight;
+            });
+        }
+
+        const canvas = document.getElementById('matrix');
+        const ctx = canvas.getContext('2d');
+        canvas.width = window.innerWidth; canvas.height = window.innerHeight;
+        const letters = "01010101 ABDUL BASIT X Y Z".split("");
+        const fontSize = 16; const columns = canvas.width / fontSize;
+        const drops = []; for (let x = 0; x < columns; x++) drops[x] = 1;
+        
+        function drawMatrix() {
+            ctx.fillStyle = "rgba(0, 0, 0, 0.05)";
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = "#ff0033"; ctx.font = fontSize + "px monospace";
+            for (let i = 0; i < drops.length; i++) {
+                const text = letters[Math.floor(Math.random() * letters.length)];
+                ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+                if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) drops[i] = 0;
                 drops[i]++;
             }
         }
         setInterval(drawMatrix, 50);
-        
-        // Handle window resize for canvas
-        window.addEventListener('resize', () => {
-            width = canvas.width = window.innerWidth;
-            height = canvas.height = window.innerHeight;
-        });
-
-        // Screen Switching Logic
-        function switchScreen(screenId) {
-            document.querySelectorAll('.screen').forEach(screen => {
-                screen.classList.remove('active');
-            });
-            document.getElementById(screenId).classList.add('active');
-        }
-
-        // Simulated Chat Logic
-        function sendSimulatedMessage(chatId, inputId, msgClass) {
-            const input = document.getElementById(inputId);
-            const text = input.value.trim();
-            if (text === "") return;
-
-            const chatBox = document.getElementById(chatId);
-            const msgDiv = document.createElement('div');
-            msgDiv.className = 'msg ' + msgClass;
-            msgDiv.innerText = text;
-
-            chatBox.appendChild(msgDiv);
-            
-            // Auto-scroll to bottom
-            chatBox.scrollTop = chatBox.scrollHeight; 
-            
-            // Clear input
-            input.value = "";
-        }
-        
-        // Add Enter key support for inputs
-        document.getElementById('cust-input').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') sendSimulatedMessage('customer-chat', 'cust-input', 'my-msg');
-        });
-        document.getElementById('admin-input').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') sendSimulatedMessage('admin-chat', 'admin-input', 'my-msg');
-        });
     </script>
 </body>
-</html># Abdul-Basit-
-A secure, real-time P2P chat portal designed for private global communications." Yeh ek chota aur behtareen description hai jo aapke project ka sahi maqsad batata hai aur developers par achha impression dalega. Isko paste karne ke baad aap seedha 'Create repository' par click kar ke apni file upload kar sakte hain.
+</html>
